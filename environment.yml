@@ -1,4 +1,4 @@
-name: gpt
+name: gpt2
 channels:
   - fastai
   - pytorch
@@ -6,6 +6,7 @@ channels:
   - defaults
 dependencies:
   - ipykernel
+  - cython
   - python
   - pip
   - fastai 
@@ -19,8 +20,6 @@ dependencies:
   - tensorflow>=2
   - uvicorn
   - terraform
-  - google-cloud-sdk
-  - tar 
   - zstd
   - transformers
   - pip:
