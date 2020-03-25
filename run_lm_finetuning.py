@@ -42,7 +42,7 @@ except:
 
 from tqdm import tqdm, trange
 from dataclasses import dataclass
-from fastprogress import progress_bar
+from fastprogress.fastprogress import progress_bar
 from fastai.basics import *
 
 from run_generation import sample_sequence

@@ -21,8 +21,8 @@ dependencies:
   - uvicorn
   - terraform
   - zstd
-  - transformers
   - pip:
+    - transformers>=2.2.0
     - pyTelegramBotAPI
     - pysocks
     - tendo
