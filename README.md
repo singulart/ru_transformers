@@ -35,6 +35,18 @@ Note: I had to create the folder ```gpt2``` and copy the trained model (folder m
 
 When running fine-tuning is it important to observe that Perplexity value goes down and down. If it starts to increase, it means the model is overfitted and training must be stopped.
 
+# Running generator locally
+
+Create folder ```gpt2/bible```
+
+Copy ```config.json```, ```encoder.model```, ```pytorch_model.bin``` from the output directory of the training to ```gpt/bible``` 
+   
+```
+python run_generation.py --model_type gpt2 --model_name_or_path gpt2/bible --length 200
+```
+
+
+
 # Russian GPT-2 
 
 # 1. I just want to play with your models
