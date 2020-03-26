@@ -1,3 +1,40 @@
+# Windows environment which I used to run fine-tuning on 
+
+GPU: 1080ti 11GB VRAM
+
+NVIDIA driver 441.66
+
+CUDA 10.1
+
+Conda 2020.02
+
+Had to install Nvidia ```apex``` using instructions in 5.7.2, because otherwise ```fp16``` was impossible to use and the model did not fit into memory even with batch size 1.
+
+Nvidia apex requires a concrete CUDA version. In my case it required 10.1, which I didn't have, so I had to install it in addition to 10.0 which I had previously
+
+# Fine-tuning 
+
+For some reason I was unable to run fine-tuning from PowerShell. From PyCharm it worked fine (from Terminal tab). This is how to run it.
+
+```
+python run_lm_finetuning.py --output_dir=%OUTPUT% --model_type=gpt2 --model_name_or_path=%OUTPUT% --do_train --train_data_file=%TRAIN_FILE% --per_gpu_train_batch_size %BS% --save_steps=10000 --logging_steps=10 --fp16 --fp16_opt_level O2 --warmup_samples 16000 --learning_rate %LR% --overwrite_output_dir --tokenizer_class YTEncoder --tokenizer_name bpe/yt.model  --do_eval --evaluate_during_training --eval_steps 1000 --eval_data_file=corpus/validation.txt  --save_total_limit 30 --num_train_epochs 10.0 --unfreeze_level 0
+```
+
+Environment variables were set as following:
+
+```
+BS=1
+OUTPUT=gpt2/m_checkpoint-3364613
+LR=3e-5
+MODEL-SIZE=gpt2-medium
+CUDA_VISIBLE_DEVICES=0
+TRAIN_FILE=corpus/Bible.txt
+```
+
+Note: I had to create the folder ```gpt2``` and copy the trained model (folder m_checkpoint-3364613) from the list of downloaded models author provided (see step 3 below)
+
+When running fine-tuning is it important to observe that Perplexity value goes down and down. If it starts to increase, it means the model is overfitted and training must be stopped.
+
 # Russian GPT-2 
 
 # 1. I just want to play with your models

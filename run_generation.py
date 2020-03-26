@@ -21,7 +21,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import logging
 from tqdm import trange
-
+import re
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -31,6 +31,7 @@ from transformers import (GPT2Config, OpenAIGPTConfig, XLNetConfig, TransfoXLCon
                                     OpenAIGPTLMHeadModel, OpenAIGPTTokenizer, 
                                     XLNetLMHeadModel, XLNetTokenizer, 
                                     TransfoXLLMHeadModel, TransfoXLTokenizer, )
+from yt_encoder import YTEncoder
 
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -43,7 +44,7 @@ MAX_LENGTH = int(10000)  # Hardcoded max length to avoid infinite loop
 ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) for conf in (GPT2Config, OpenAIGPTConfig, XLNetConfig, TransfoXLConfig)), ())
 
 MODEL_CLASSES = {
-    'gpt2': (GPT2LMHeadModel, GPT2Tokenizer),
+    'gpt2': (GPT2LMHeadModel, YTEncoder),
     'openai-gpt': (OpenAIGPTLMHeadModel, OpenAIGPTTokenizer),
     'xlnet': (XLNetLMHeadModel, XLNetTokenizer),
     'transfo-xl': (TransfoXLLMHeadModel, TransfoXLTokenizer),
@@ -192,12 +193,20 @@ def main():
             device=args.device,
             is_xlnet=bool(args.model_type == "xlnet"),
         )
-        out = out[0, len(context_tokens):].tolist()
-        text = tokenizer.decode(out, clean_up_tokenization_spaces=True)
-        print(text)
+
+        prompt = tokenizer.decode(context_tokens)
+        len_prompt = len(prompt)
+
+        replies = [out[item, :].tolist() for item in range(len(out))]
+        text = [tokenizer.decode(item)[len_prompt:] for item in replies]
+        reg_text = [re.match(r'[\w\W]*[\.!?]\n', item) for item in text]
+        reg_text2 = [re.match(r'[\w\W]*[\.!?]', item) for item in text]
+        result = [reg_item[0] if reg_item else reg_item2[0] if reg_item2 else item for reg_item, reg_item2, item in
+                  zip(reg_text, reg_text2, text)]
+        logger.info(result)
         if args.prompt:
             break
-    return text
+    return result
 
 
 if __name__ == '__main__':
