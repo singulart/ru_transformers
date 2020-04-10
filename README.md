@@ -39,7 +39,7 @@ When running fine-tuning is it important to observe that Perplexity value goes d
 
 Create folder ```gpt2/bible```
 
-Copy ```config.json```, ```encoder.model```, ```pytorch_model.bin``` from the output directory of the training to ```gpt/bible``` 
+Copy ```config.json```, ```encoder.model```, ```pytorch_model.bin``` from the output directory of the training to ```gpt2/bible``` 
    
 ```
 python run_generation.py --model_type gpt2 --model_name_or_path gpt2/bible --length 200
