@@ -8,12 +8,16 @@ import regex as re
 
 NEW_LINE = '<|n|>'
 
+
 class SPEncoder(PreTrainedTokenizer):
     def_name = 'encoder.model'
+
     def __init__(self, filename, *inputs, **kwargs):
         super().__init__(*inputs, **kwargs)
-        self.max_len_single_sentence = 1024 # no default special tokens - you can update this value if you add special tokens
-        self.max_len_sentences_pair = 1024 # no default special tokens - you can update this value if you add special tokens
+        # no default special tokens - you can update this value if you add special tokens
+        self.max_len_single_sentence = 1024
+        # no default special tokens - you can update this value if you add special tokens
+        self.max_len_sentences_pair = 1024
 
         if os.path.isdir(filename): filename = os.path.join(filename, self.def_name)
 
@@ -29,7 +33,7 @@ class SPEncoder(PreTrainedTokenizer):
 
     def encode(self, text):
         if text and text[0] != ' ': text = ' ' + text
-        text = re.sub(r'(?=[^ ])([\W])([\w])',r'\g<1> \g<2>',text)
+        text = re.sub(r'(?=[^ ])([\W])([\w])',r'\g<1> \g<2>', text)
         text = text.replace('\n', NEW_LINE)
         stext = re.split('(<\|n\|>)', text)
         result = [token 
@@ -57,7 +61,8 @@ class SPEncoder(PreTrainedTokenizer):
     def from_pretrained(cls, *inputs, **kwargs):
         return cls(*inputs, **kwargs)
 
-    def add_special_tokens_single_sentence(self, token_ids):
+    @staticmethod
+    def add_special_tokens_single_sentence(token_ids):
         return token_ids
 
     def save_pretrained(self, save_directory):
