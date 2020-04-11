@@ -46,7 +46,7 @@
 	<xsl:value-of select="fb:last-name"/>
 	<xsl:text >&#010;</xsl:text>
 </xsl:template>
-	<!-- secuence template -->
+	<!-- sequence template -->
 <xsl:template name="sequence">
 <xsl:value-of select="@name"/><xsl:if test="@number"><xsl:text >&#032;#</xsl:text><xsl:value-of select="@number"/></xsl:if>
 <xsl:if test="fb:sequence">
