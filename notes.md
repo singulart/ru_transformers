@@ -43,7 +43,7 @@ Finding: seems that this is how YTTM dictionary is organized. Question: how to q
 
 -------------------------------------------------------------
 
-##### Bad encoding (Windows only)
+##### [SOLVED] Bad encoding (Windows only)
 ```
 yttm vocab --verbose --model bpe/yt.model 
 ```
@@ -73,3 +73,6 @@ which is equivalent to (used http://www.online-decoder.com to convert to utf-8)
 50255 ▁процесса,=▁процесса+, 11285+21
 50256 ▁Которая=▁Кото+рая 8631+930
 ```
+
+Solution: for some reason default encoding in Powershell is ```cp866```. To solve the problem, run ```chcp 65001``` 
+which will set the encoding to UTF-8
