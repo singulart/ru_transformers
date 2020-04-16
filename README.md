@@ -14,7 +14,6 @@ Nvidia apex requires a concrete CUDA version. In my case it required 10.1, which
 
 # Fine-tuning 
 
-For some reason I was unable to run fine-tuning from PowerShell. From PyCharm it worked fine (from Terminal tab). This is how to run it.
 
 ```
 python run_lm_finetuning.py --output_dir=%OUTPUT% --model_type=gpt2 --model_name_or_path=%OUTPUT% --do_train --train_data_file=%TRAIN_FILE% --per_gpu_train_batch_size %BS% --save_steps=10000 --logging_steps=10 --fp16 --fp16_opt_level O2 --warmup_samples 16000 --learning_rate %LR% --overwrite_output_dir --tokenizer_class YTEncoder --tokenizer_name bpe/yt.model  --do_eval --evaluate_during_training --eval_steps 1000 --eval_data_file=corpus/validation.txt  --save_total_limit 30 --num_train_epochs 10.0 --unfreeze_level 0
