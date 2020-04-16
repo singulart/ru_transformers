@@ -1,3 +1,31 @@
+##### Converting GPT2 from TensorFlow to PyTorch
+
+Step 1. Download GPT2 model
+I used 774M variant:
+  
+In Linux: clone https://github.com/nshepperd/gpt-2, after install dependencies and run download script
+``` 
+python3 download_model.py 774M
+```
+
+This will produce a directory with several files. I copied it to ru_transformers\gpt2
+because I was lazy to set up a whole new conda env. 
+
+Step 2. Download and save the configs for the GPT2. All possible options are listed here:
+https://raw.githubusercontent.com/huggingface/transformers/master/src/transformers/configuration_gpt2.py
+Warning: rename downloaded file to config.json
+
+Step 3. Download and save the files for GPT2 Tokenizer. All possible options are listed here:
+https://raw.githubusercontent.com/huggingface/transformers/master/src/transformers/tokenization_gpt2.py
+Warning: rename downloaded files to vocab.json and merges.txt
+
+Step 4. Run the conversion script from the root of ru_transformers project:
+```
+python convert_gpt2_original_tf_checkpoint_to_pytorch.py --gpt2_checkpoint_path gpt2\774M --pytorch_dump_folder_path gpt2\774M-torch-converted --gpt2_config_file ..\gpt2\gpt2-large\config.json 
+```
+Warning: without --gpt2_config_file I got AssertionError, because Gpt@Config was initialized improp
+
+
 ##### Strange yttm vocabulary contents
 
 While inspecting the yttm vocab like this:
