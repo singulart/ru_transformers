@@ -1,3 +1,13 @@
+##### Fine-tuning GPT2 with my custom dataset
+```
+python run_language_modeling.py --line_by_line --output_dir=Output --model_type=gpt2-large --do_train --train_data_file=corpus\snowden.txt --per_gpu_train_batch_size %BS% --save_steps=10000 --logging_steps=10 --fp16 --fp16_opt_level O3 --warmup_steps 16000 --learning_rate %LR% --overwrite_output_dir --do_eval --evaluate_during_training --eval_data_file=corpus/snowden_valid.txt  --save_total_limit 30 --num_train_epochs 1000.0 --tokenizer_name D:\projects\ai\gpt2\gpt2-large --model_name_or_path gpt2\774M-torch-converted 
+```
+For me, OOM was ovecome only by setting ```--fp16_opt_level O3``` unlike @mgrankin ru_transformers where it was 02 
+
+Problem: perplexity = tensor(nan)
+
+__________________________________________
+
 ##### Converting GPT2 from TensorFlow to PyTorch
 
 Step 1. Download GPT2 model
