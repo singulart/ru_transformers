@@ -47,12 +47,14 @@ from fastai.basics import *
 
 from run_generation import sample_sequence
 
-from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup, get_constant_schedule_with_warmup, get_cosine_schedule_with_warmup,
-                                  BertConfig, BertForMaskedLM, BertTokenizer,
-                                  GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
-                                  OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
-                                  RobertaConfig, RobertaForMaskedLM, RobertaTokenizer,
-                                  DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
+from transformers import (WEIGHTS_NAME, AdamW, get_linear_schedule_with_warmup, get_constant_schedule_with_warmup,
+                          get_cosine_schedule_with_warmup,
+                          PreTrainedTokenizer,
+                          BertConfig, BertForMaskedLM, BertTokenizer,
+                          GPT2Config, GPT2LMHeadModel, GPT2Tokenizer,
+                          OpenAIGPTConfig, OpenAIGPTLMHeadModel, OpenAIGPTTokenizer,
+                          RobertaConfig, RobertaForMaskedLM, RobertaTokenizer,
+                          DistilBertConfig, DistilBertForMaskedLM, DistilBertTokenizer)
 
 from sp_encoder import SPEncoder
 from yt_encoder import YTEncoder
@@ -164,9 +166,34 @@ class TextDataset(Dataset):
         return torch.tensor(self.examples[item])
 
 
+class LineByLineTextDataset(Dataset):
+    def __init__(self, tokenizer: PreTrainedTokenizer, args, file_path: str, block_size=512):
+        assert os.path.isfile(file_path)
+        # Here, we do not cache the features, operating under the assumption
+        # that we will soon use fast multithreaded tokenizers from the
+        # `tokenizers` repo everywhere =)
+        logger.info("Creating features from dataset file at %s", file_path)
+
+        with open(file_path, encoding="utf-8") as f:
+            lines = [line for line in f.read().splitlines() if (len(line) > 0 and not line.isspace())]
+
+        self.examples = tokenizer.batch_encode_plus(lines, add_special_tokens=True, max_length=block_size)["input_ids"]
+
+    def __len__(self):
+        return len(self.examples)
+
+    def __getitem__(self, i):
+        return torch.tensor(self.examples[i], dtype=torch.long)
+
+
 def load_and_cache_examples(args, tokenizer, evaluate=False):
-    dataset = TextDataset(tokenizer, file_path=args.eval_data_file if evaluate else args.train_data_file, args=args, shuffle=not evaluate)
-    return dataset
+    if args.line_by_line:
+        return LineByLineTextDataset(tokenizer, args,
+                                     file_path=args.eval_data_file if evaluate else args.train_data_file,
+                                     block_size=args.block_size)
+    else:
+        return TextDataset(tokenizer, file_path=args.eval_data_file if evaluate else args.train_data_file, args=args,
+                           shuffle=not evaluate)
 
 
 def set_seed(args):
@@ -540,6 +567,11 @@ def main():
                         help="For distributed training: local_rank")
     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
+    parser.add_argument(
+        "--line_by_line",
+        action="store_true",
+        help="Whether distinct lines of text in the dataset are to be handled as distinct sequences.",
+    )
     args = parser.parse_args()
 
     if args.model_type in ["bert", "roberta", "distilbert"] and not args.mlm:
@@ -590,10 +622,14 @@ def main():
     if args.tokenizer_class: tokenizer_class = globals()[args.tokenizer_class]
     print("Tokenizer is %s" % tokenizer_class)
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path, do_lower_case=args.do_lower_case)
+    tokenizer.add_special_tokens({'bos_token': '<|startoftext>', 'unk_token': '<UNK>'})
+
     if args.block_size <= 0:
         args.block_size = tokenizer.max_len_single_sentence  # Our input block size will be the max possible for the model
     args.block_size = min(args.block_size, tokenizer.max_len_single_sentence)
     model = model_class.from_pretrained(args.model_name_or_path, from_tf=bool('.ckpt' in args.model_name_or_path), config=config)
+    # model.resize_token_embeddings(len(tokenizer))
+    assert tokenizer.bos_token == '<|startoftext>'
     model.to(args.device)
 
     print(200*'/')
